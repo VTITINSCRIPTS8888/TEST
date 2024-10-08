@@ -1,0 +1,118 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local attackSpeed = 0.2 -- Velocidade de ataque (tempo entre ataques)
+local hitboxSize = Vector3.new(100, 100, 100) -- Tamanho da hitbox (gigante)
+local Obby       =  game:GetService("Workspace").ObbyW
+local Phase      =  game:GetService("Workspace").BossPhase
+
+
+local function createHitbox()
+    local hitbox = Instance.new("Part") -- Cria uma nova hitbox
+    hitbox.Size = hitboxSize -- Define o tamanho da hitbox
+    hitbox.Transparency = 0.5 -- Torna a hitbox semi-transparente (pode ser 1 para invisível)
+    hitbox.CanCollide = false -- Não colidir com objetos
+    hitbox.Anchored = true -- Para que a hitbox não se mova
+    hitbox.CFrame = character.HumanoidRootPart.CFrame -- Define a posição da hitbox na arena
+    hitbox.Parent = workspace -- Coloca a hitbox no workspace
+
+game:GetService("Debris"):AddItem(hitbox, 0.5) -- Hitbox existe por 0.5 segundos
+
+local function detectHits(hitbox)
+    for _, target in pairs(workspace:GetChildren()) do
+        if target:FindFirstChild("Humanoid") and target ~= character then
+            local targetHumanoid = target:FindFirstChild("Humanoid")
+            if (hitbox.Position - target.HumanoidRootPart.Position).Magnitude <= hitbox.Size.Magnitude / 2 then
+                targetHumanoid:TakeDamage(20) -- Dano causado ao alvo
+                print("Alvo atingido: " .. target.Name)
+            end
+        end
+    end
+end
+
+local function performFastAttack()
+    while humanoid.Health > 0 do
+        createHitbox() -- Cria a hitbox a cada ataque
+        detectHits(hitbox) -- Detecta os alvos atingidos pela hitbox
+        wait(attackSpeed) -- Espera o tempo do ataque (ataque rápido)
+    end
+end
+
+local boss = game.Workspace:FindFirstChild("Boss")
+
+local function disableBossAttackScripts()
+    if boss then
+        local attackScripts = boss:FindFirstChild("AttackScripts")
+        if attackScripts then
+            for _, script in pairs(attackScripts:GetChildren()) do
+                if script:IsA("Script") or script:IsA("LocalScript") then
+                    script.Disabled = true
+                end
+            end
+        end
+    end
+end
+
+local function removeBossWeapons()
+    if boss and boss:FindFirstChild("Weapon") then
+        boss.Weapon:Destroy()
+    end
+end
+
+local function disconnectBossAttackEvents()
+    if boss and boss:FindFirstChild("AttackEvent") then
+        boss.AttackEvent:Disconnect()
+    end
+end
+
+disableBossAttackScripts()
+removeBossWeapons()
+disconnectBossAttackEvents()
+
+local UserInputService = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local interval = 0.02
+
+local function autoClick()
+    while true do
+        mouse1click()
+        wait(interval)
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.KeyCode == Enum.KeyCode.X and not gameProcessedEvent then
+        autoClick()
+    end
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+local bossDoorPosition = Vector3.new(10, 0, 20) -- Posição da porta do boss
+local safePosition = Vector3.new(10, 50, 20) -- Posição segura
+
+local function teleportToBossDoor()
+    humanoidRootPart.CFrame = CFrame.new(bossDoorPosition)
+    wait(0.1)
+    humanoidRootPart.CFrame = CFrame.new(safePosition)
+end
+
+teleportToBossDoor()
+
+task.spawn(function()
+    while Attacking.Value == false do task.wait()
+        if Obby.Value == true then
+            HumanoidRootPart.CFrame = CFrame.new(20.4561386, 113.245972, 196.61351, 0.0634383112, 5.81675401e-08, -0.99798578, 8.29346689e-08, 1, 6.35567972e-08, 0.99798578, -8.67995524e-08, 0.0634383112)
+        else
+            if Phase.Value == "None" then
+                HumanoidRootPart.CFrame = CFrame.new(-5.46999931, -4.45343876, 248.209991, 1, 1.68923409e-09, 7.63995055e-14, -1.68923409e-09, 1, 6.64721389e-09, -7.63882772e-14, -6.64721389e-09, 1)
+            else
+                HumanoidRootPart.CFrame = CFrame.new(-19.8957844, -4.77343941, 142.49881, -0.999476075, -3.27794467e-08, -0.0323671587, -3.71140274e-08, 1, 1.33318295e-07, 0.0323671587, 1.34449706e-07, -0.999476075)
+            end
+        end
+    end
+end)
